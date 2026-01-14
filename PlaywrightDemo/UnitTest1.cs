@@ -6,47 +6,73 @@ namespace PlaywrightDemo
 {
     public class Tests
     {
+        private PlaywrightDriver _driver;
+        
         [SetUp]
-        public void Setup()
+        public async Task Setup()
         {
+            TestSettings testSettings = new TestSettings
+            {
+                // Channel = "chrome",
+                DevTools = true,
+                Headless = true,
+                SlowMo = 1500,
+                DriverType = DriverType.Firefox
+            };
+          
+            _driver = new PlaywrightDriver(testSettings);
+            await _driver.Page.GotoAsync("http://eaapp.somee.com");
         }
 
         [Test]
         public async Task Test1()
         {
-            TestSettings testSettings = new TestSettings
-            {
-                Channel = "msedge",
-                DevTools = true,
-                Headless = false,
-                SlowMo = 1500,
-                DriverType = DriverType.Edge
-            };
-          
-
-            PlaywrightDriver driver = new PlaywrightDriver();
-            var page = await driver.InitalizePlaywrightAsync(testSettings);
-
-            await page.ClickAsync("text=Login");
+            
+            
+            await _driver.Page.ClickAsync("text=Login");
 
         }
 
         [Test]
-        public async Task LaunchingBrowserInAnotherOption()
+        public async Task LoginTest()
         {
-            var playwrightDriver = await Playwright.CreateAsync();
+            await _driver.Page.ClickAsync("text=Login");
+            await _driver.Page.GetByLabel("Username").FillAsync("admin");
+            await _driver.Page.GetByLabel("Password").FillAsync("password");
 
-            var browserOption = new BrowserTypeLaunchOptions();
-            browserOption.Headless = false;
-            browserOption.Devtools = true;
-            browserOption.Channel = "chrome";
 
-            var chromium = await playwrightDriver["firefox"].LaunchAsync(browserOption);
-            var browserContext = await chromium.NewContextAsync();
-            var page = await browserContext.NewPageAsync();
+        }
 
-            await page.GotoAsync("http://eaapp.somee.com");
+        // [Test]
+        // public async Task LaunchingBrowserInAnoBtherOption()
+        // {
+            
 
+        //      // create Playwright
+        //     using var playwright = await Playwright.CreateAsync();
+
+        //     // launch browser (bundled Chromium)
+        //     await using var browser = await playwright.Chromium.LaunchAsync(
+        //         new BrowserTypeLaunchOptions
+        //         {
+        //             Headless = true
+        //         });
+
+        //     // create context + page
+        //     var context = await browser.NewContextAsync();
+        //     var page = await context.NewPageAsync();
+
+        //     // navigate & assert
+        //     await page.GotoAsync("https://example.com");
+            
+
+        // }
+
+        [TearDown] 
+        public async Task TearDown()
+        {
+            await _driver.Browser.CloseAsync();
+            await _driver.Browser.DisposeAsync();
         }
     }
 }
